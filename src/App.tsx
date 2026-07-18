@@ -66,6 +66,34 @@ export default function App() {
   // Selection and hover states for equipment
   const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);
   const [hoveredEquipment, setHoveredEquipment] = useState<Equipment | null>(null);
+  
+  // Try to load persisted data from central API if available (Vite: VITE_API_URL)
+  useEffect(() => {
+    const API_BASE = (import.meta.env && import.meta.env.VITE_API_URL) ? import.meta.env.VITE_API_URL : '';
+    const fetchRemote = async () => {
+      try {
+        const eqRes = await fetch((API_BASE || '') + '/api/equipment');
+        if (eqRes.ok) {
+          const eq = await eqRes.json();
+          if (Array.isArray(eq) && eq.length) setEquipmentList(eq);
+        }
+        const rgRes = await fetch((API_BASE || '') + '/api/regions');
+        if (rgRes.ok) {
+          const rg = await rgRes.json();
+          if (Array.isArray(rg) && rg.length) setRegionsList(rg);
+        }
+        const plRes = await fetch((API_BASE || '') + '/api/pipelines');
+        if (plRes.ok) {
+          const pl = await plRes.json();
+          if (Array.isArray(pl) && pl.length) setPipelinesList(pl);
+        }
+      } catch (e) {
+        // API not available; keep using localStorage fallback
+        console.warn('Central API not reachable, using localStorage fallback');
+      }
+    };
+    fetchRemote();
+  }, []);
 
   // Simulation controls
   const [simSpeed, setSimSpeed] = useState<'off' | '1x' | '5x'>('1x');
@@ -587,22 +615,28 @@ export default function App() {
     });
   };
 
-  // UPDATE EQUIPMENT COORDINATES
+  // UPDATE EQUIPMENT COORDINATES (updates local state and persists to central API when available)
   const handleUpdateEquipmentCoordinates = (id: string, x: number, y: number) => {
     setEquipmentList(prevList => {
-      return prevList.map(eq => {
-        if (eq.id === id) {
-          return { ...eq, x, y };
-        }
-        return eq;
-      });
+      const updated = prevList.map(eq => eq.id === id ? { ...eq, x, y } : eq);
+      // Persist change to central API only for privileged profiles (e.g., admin)
+      const isPrivileged = userProfile === 'admin';
+      if (isPrivileged) {
+        const API_BASE = (import.meta.env && import.meta.env.VITE_API_URL) ? import.meta.env.VITE_API_URL : '';
+        fetch((API_BASE || '') + `/api/equipment/${encodeURIComponent(id)}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updated.find(e => e.id === id))
+        }).catch(err => console.warn('Persisting equipment position failed', err));
+      }
+      return updated;
     });
   };
 
   // UPDATE REGION VERTEX
   const handleUpdateRegionVertex = (regionId: string, vertexIndex: number, x: number, y: number) => {
     setRegionsList(prevList => {
-      return prevList.map(reg => {
+      const updated = prevList.map(reg => {
         if (reg.id === regionId) {
           const pts = reg.points.split(' ');
           pts[vertexIndex] = `${x},${y}`;
@@ -610,13 +644,24 @@ export default function App() {
         }
         return reg;
       });
+      const isPrivileged = userProfile === 'admin';
+      if (isPrivileged) {
+        const regObj = updated.find(r => r.id === regionId);
+        const API_BASE = (import.meta.env && import.meta.env.VITE_API_URL) ? import.meta.env.VITE_API_URL : '';
+        if (regObj) {
+          fetch((API_BASE || '') + `/api/regions/${encodeURIComponent(regionId)}`, {
+            method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(regObj)
+          }).catch(err => console.warn('Persisting region failed', err));
+        }
+      }
+      return updated;
     });
   };
 
   // ADD REGION VERTEX
   const handleAddRegionVertex = (regionId: string, vertexIndex: number, x: number, y: number) => {
     setRegionsList(prevList => {
-      return prevList.map(reg => {
+      const updated = prevList.map(reg => {
         if (reg.id === regionId) {
           const pts = reg.points.split(' ');
           pts.splice(vertexIndex, 0, `${x},${y}`);
@@ -624,13 +669,24 @@ export default function App() {
         }
         return reg;
       });
+      const isPrivileged = userProfile === 'admin';
+      if (isPrivileged) {
+        const regObj = updated.find(r => r.id === regionId);
+        const API_BASE = (import.meta.env && import.meta.env.VITE_API_URL) ? import.meta.env.VITE_API_URL : '';
+        if (regObj) {
+          fetch((API_BASE || '') + `/api/regions/${encodeURIComponent(regionId)}`, {
+            method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(regObj)
+          }).catch(err => console.warn('Persisting region failed', err));
+        }
+      }
+      return updated;
     });
   };
 
   // DELETE REGION VERTEX
   const handleDeleteRegionVertex = (regionId: string, vertexIndex: number) => {
     setRegionsList(prevList => {
-      return prevList.map(reg => {
+      const updated = prevList.map(reg => {
         if (reg.id === regionId) {
           const pts = reg.points.split(' ');
           if (pts.length > 3) {
@@ -640,24 +696,50 @@ export default function App() {
         }
         return reg;
       });
+      const isPrivileged = userProfile === 'admin';
+      if (isPrivileged) {
+        const regObj = updated.find(r => r.id === regionId);
+        const API_BASE = (import.meta.env && import.meta.env.VITE_API_URL) ? import.meta.env.VITE_API_URL : '';
+        if (regObj) {
+          fetch((API_BASE || '') + `/api/regions/${encodeURIComponent(regionId)}`, {
+            method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(regObj)
+          }).catch(err => console.warn('Persisting region failed', err));
+        }
+      }
+      return updated;
     });
   };
 
   // UPDATE REGION INFO (Name, operator, color, etc.)
   const handleUpdateRegionInfo = (regionId: string, updates: Partial<Region>) => {
     setRegionsList(prevList => {
-      return prevList.map(reg => {
-        if (reg.id === regionId) {
-          return { ...reg, ...updates };
+      const updated = prevList.map(reg => reg.id === regionId ? { ...reg, ...updates } : reg);
+      const isPrivileged = userProfile === 'admin';
+      if (isPrivileged) {
+        const regObj = updated.find(r => r.id === regionId);
+        const API_BASE = (import.meta.env && import.meta.env.VITE_API_URL) ? import.meta.env.VITE_API_URL : '';
+        if (regObj) {
+          fetch((API_BASE || '') + `/api/regions/${encodeURIComponent(regionId)}`, {
+            method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(regObj)
+          }).catch(err => console.warn('Persisting region failed', err));
         }
-        return reg;
-      });
+      }
+      return updated;
     });
   };
 
   // DELETE REGION
   const handleDeleteRegion = (regionId: string) => {
-    setRegionsList(prev => prev.filter(reg => reg.id !== regionId));
+    setRegionsList(prev => {
+      const updated = prev.filter(reg => reg.id !== regionId);
+      const isPrivileged = userProfile === 'admin';
+      if (isPrivileged) {
+        const API_BASE = (import.meta.env && import.meta.env.VITE_API_URL) ? import.meta.env.VITE_API_URL : '';
+        // Deleting on server: set an empty object or remove row depending on server capability. Server currently only supports upsert; remove locally and upsert empty data to keep consistency.
+        fetch((API_BASE || '') + `/api/regions/${encodeURIComponent(regionId)}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: regionId, deleted: true }) }).catch(() => {});
+      }
+      return updated;
+    });
   };
 
   // ADD NEW REGION
@@ -673,7 +755,15 @@ export default function App() {
       reservatoriosCount: 0,
       medidoresCount: 0
     };
-    setRegionsList(prev => [...prev, newReg]);
+    setRegionsList(prev => {
+      const updated = [...prev, newReg];
+      const isPrivileged = userProfile === 'admin';
+      if (isPrivileged) {
+        const API_BASE = (import.meta.env && import.meta.env.VITE_API_URL) ? import.meta.env.VITE_API_URL : '';
+        fetch((API_BASE || '') + `/api/regions/${encodeURIComponent(id)}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newReg) }).catch(err => console.warn('Persisting new region failed', err));
+      }
+      return updated;
+    });
     
     // Add event log
     const logId = 'LOG-' + Math.round(100 + Math.random() * 900);
