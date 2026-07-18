@@ -1,0 +1,6 @@
+{
+  "name": "SAAE Manacapuru SCADA",
+  "description": "Sistema de Supervisão e Controle Operacional em Tempo Real para a rede de abastecimento de água do SAAE Manacapuru - Amazonas.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,186 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-scada-main: var(--bg-principal);
+  --color-scada-sidebar: var(--bg-sidebar);
+  --color-scada-navbar: var(--bg-navbar);
+  --color-scada-card: var(--bg-cards);
+  --color-scada-border: var(--border-color);
+  --color-scada-primary: var(--text-principal);
+  --color-scada-secondary: var(--text-secundario);
+  --color-scada-icon: var(--icon-color);
+  --color-scada-btn-primary: var(--btn-primary);
+  --color-scada-btn-secondary: var(--btn-secondary);
+}
+
+:root {
+  /* DARK MODE (Default/Professional CCO) */
+  --bg-principal: #0B1220;
+  --bg-sidebar: #0F172A;
+  --bg-navbar: #111827;
+  --bg-cards: #18212F;
+  --bg-card-hover: #223045;
+  --border-color: #2A3B52;
+  --text-principal: #F8FAFC;
+  --text-secundario: #A8B4C6;
+  --icon-color: #2DD4BF;
+  --btn-primary: #14B8A6;
+  --btn-primary-hover: #0F766E;
+  --btn-secondary: #3B82F6;
+  --btn-secondary-hover: #2563EB;
+
+  /* Cores Operacionais (SCADA) */
+  --eq-ligado: #22C55E;
+  --eq-desligado: #94A3B8;
+  --eq-auto: #0EA5E9;
+  --eq-manual: #A855F7;
+  --eq-manutencao: #FBBF24;
+  --eq-bloqueado: #64748B;
+
+  --alarm-baixo: #FB923C;
+  --alarm-medio: #F97316;
+  --alarm-alto: #EF4444;
+  --alarm-critico: #B91C1C;
+
+  --comm-perdida: #6B7280;
+  --sem-energia: #1E293B;
+
+  --pressao-normal: #22C55E;
+  --pressao-baixa: #FACC15;
+  --pressao-alta: #FB923C;
+  --pressao-critica: #DC2626;
+
+  /* Cores para Gráficos */
+  --serie-01: #14B8A6;
+  --serie-02: #3B82F6;
+  --serie-03: #06B6D4;
+  --serie-04: #84CC16;
+  --serie-05: #FBBF24;
+  --serie-06: #FB923C;
+  --serie-07: #EC4899;
+  --serie-08: #8B5CF6;
+}
+
+[data-theme="light"] {
+  /* LIGHT MODE */
+  --bg-principal: #F5F7FA;
+  --bg-sidebar: #0E3B43;
+  --bg-navbar: #FFFFFF;
+  --bg-cards: #FFFFFF;
+  --bg-card-hover: #F1F5F9;
+  --border-color: #DCE3EA;
+  --text-principal: #102A43;
+  --text-secundario: #52667A;
+  --icon-color: #0EA5A8;
+  --btn-primary: #14B8A6;
+  --btn-primary-hover: #0D9488;
+  --btn-secondary: #2563EB;
+  --btn-secondary-hover: #1D4ED8;
+}
+
+/* Custom theme mapping classes */
+.bg-scada-main {
+  background-color: var(--bg-principal);
+  transition: background-color 0.2s ease-in-out;
+}
+
+.bg-scada-sidebar {
+  background-color: var(--bg-sidebar);
+  transition: background-color 0.2s ease-in-out;
+}
+
+.bg-scada-navbar {
+  background-color: var(--bg-navbar);
+  transition: background-color 0.2s ease-in-out;
+}
+
+.bg-scada-card {
+  background-color: var(--bg-cards);
+  transition: background-color 0.2s ease-in-out;
+}
+
+.hover-bg-scada-card:hover {
+  background-color: var(--bg-card-hover);
+}
+
+.border-scada {
+  border-color: var(--border-color);
+  transition: border-color 0.2s ease-in-out;
+}
+
+.text-scada-primary {
+  color: var(--text-principal);
+  transition: color 0.15s ease-in-out;
+}
+
+.text-scada-secondary {
+  color: var(--text-secundario);
+  transition: color 0.15s ease-in-out;
+}
+
+.text-scada-icon {
+  color: var(--icon-color);
+  transition: color 0.15s ease-in-out;
+}
+
+.bg-scada-btn-primary {
+  background-color: var(--btn-primary);
+  color: #FFFFFF;
+  transition: all 0.15s ease-in-out;
+}
+
+.bg-scada-btn-primary:hover:not(:disabled) {
+  background-color: var(--btn-primary-hover);
+}
+
+.bg-scada-btn-secondary {
+  background-color: var(--btn-secondary);
+  color: #FFFFFF;
+  transition: all 0.15s ease-in-out;
+}
+
+.bg-scada-btn-secondary:hover:not(:disabled) {
+  background-color: var(--btn-secondary-hover);
+}
+
+/* Operational utility colors */
+.color-eq-on { color: var(--eq-ligado); }
+.bg-eq-on { background-color: var(--eq-ligado); }
+
+.color-eq-off { color: var(--eq-desligado); }
+.bg-eq-off { background-color: var(--eq-desligado); }
+
+.color-eq-auto { color: var(--eq-auto); }
+.bg-eq-auto { background-color: var(--eq-auto); }
+
+.color-eq-manual { color: var(--eq-manual); }
+.bg-eq-manual { background-color: var(--eq-manual); }
+
+.color-eq-maint { color: var(--eq-manutencao); }
+.bg-eq-maint { background-color: var(--eq-manutencao); }
+
+.color-eq-locked { color: var(--eq-bloqueado); }
+.bg-eq-locked { background-color: var(--eq-bloqueado); }
+
+/* Animation keyframes for critical alarm pulse */
+@keyframes scada-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.7);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 0 10px 4px rgba(185, 28, 28, 0.4);
+  }
+}
+
+.scada-pulse-critical {
+  animation: scada-pulse 1.2s infinite ease-in-out;
+}
+
+/* Custom fonts setup in Tailwind */
+body {
+  font-family: 'Inter', 'Manrope', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
